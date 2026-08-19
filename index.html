@@ -523,13 +523,12 @@
 <!-- Toast notification -->
 <div class="toast" id="toast"></div>
     
-   <script>
+ <script>
     // ============================================================
-    // CONFIGURAÇÃO DO SUPABASE - CORRIGIDA
+    // CONFIGURAÇÃO DO SUPABASE
     // ============================================================
     const SUPABASE_URL = 'https://nlhjlgerkwtbwelwcrpb.supabase.co';
-    // ⚠️ ATENÇÃO: Substitua pela chave PUBLISHABLE correta (começa com sb_pub_)
-    const SUPABASE_ANON_KEY = 'sb_pub_aqui_sua_chave_completa';
+    const SUPABASE_ANON_KEY = 'sb_publishable_HEobL0ZSvRcH3BSMR_C03A__e0NBrdQ';
     const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const TABLE_NAME = 'equipamentos';
 
@@ -537,7 +536,6 @@
     // ESTADO
     // ============================================================
     let equipamentos = [];
-    let isLoading = false;
 
     // ============================================================
     // DOM REFERENCES
@@ -573,30 +571,23 @@
         try {
             tbody.innerHTML = `<tr><td colspan="14" class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando equipamentos...</td></tr>`;
             
-            console.log('🔍 Tentando carregar dados do Supabase...');
-            
             const { data, error } = await supabase
                 .from(TABLE_NAME)
                 .select('*')
                 .order('id', { ascending: true });
 
-            if (error) {
-                console.error('❌ Erro do Supabase:', error);
-                throw error;
-            }
+            if (error) throw error;
 
-            console.log('✅ Dados carregados:', data);
             equipamentos = data || [];
             populateSelects();
             render();
-            showToast(`✅ ${equipamentos.length} equipamentos carregados`, 'success');
+            if (equipamentos.length > 0) {
+                showToast(`✅ ${equipamentos.length} equipamentos carregados`, 'success');
+            }
         } catch (err) {
-            console.error('❌ Erro ao carregar:', err);
-            showToast('❌ Erro ao carregar equipamentos: ' + err.message, 'error');
-            tbody.innerHTML = `<tr><td colspan="14" class="empty-row">
-                Erro ao carregar dados. Verifique a conexão com o Supabase.<br>
-                <small style="color:#991b1b;">${err.message}</small>
-            </td></tr>`;
+            console.error('Erro ao carregar:', err);
+            showToast('❌ Erro ao carregar: ' + err.message, 'error');
+            tbody.innerHTML = `<tr><td colspan="14" class="empty-row">Erro ao carregar dados. Verifique a conexão com o Supabase.</td></tr>`;
         }
     }
 
@@ -733,6 +724,7 @@
     // MODAL
     // ============================================================
     function openModal() {
+        console.log('📂 Abrindo modal...');
         modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
         formEquip.reset();
@@ -746,6 +738,7 @@
         document.body.style.overflow = '';
     }
 
+    // Event listeners do modal
     btnNew.addEventListener('click', openModal);
     modalClose.addEventListener('click', closeModal);
     modalCancel.addEventListener('click', closeModal);
@@ -801,6 +794,7 @@
     // ============================================================
     // INICIALIZAR
     // ============================================================
+    console.log('🚀 Inicializando dashboard...');
     loadEquipamentos();
 </script>
 </body>
