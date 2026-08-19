@@ -528,8 +528,8 @@
     // CONFIGURAÇÃO DO SUPABASE
     // Substitua pelos seus dados do Supabase
     // ============================================================
-    const SUPABASE_URL = 'https://seu-projeto.supabase.co';
-    const SUPABASE_ANON_KEY = 'sua-chave-anon-aqui';
+    const SUPABASE_URL = 'https://nlhjlgerkwtbwelwcrpb.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_HEoblOZSvRcH3BSMR_CO3A__e0NBrdQ';
     const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const TABLE_NAME = 'equipamentos';
 
@@ -801,6 +801,17 @@
     // INICIALIZAR
     // ============================================================
     loadEquipamentos();
+    // Teste se a conexão está funcionando
+const { data, error } = await supabase
+    .from('equipamentos')
+    .select('*')
+    .limit(1);
+    
+if (error) {
+    console.log('❌ Erro:', error);
+} else {
+    console.log('✅ Conectado! Dados:', data);
+}
 </script>
 </body>
 </html>
