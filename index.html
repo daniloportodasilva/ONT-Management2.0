@@ -226,18 +226,29 @@
 
 <script>
     // ============================================================
-    // CARREGAMENTO DO SUPABASE COM FALLBACK
+    // CARREGAMENTO DO SUPABASE COM FALLBACK - CORRIGIDO
     // ============================================================
     (function loadSupabase() {
         console.log('🔍 Iniciando carregamento do Supabase...');
         
+        // Usando apenas a CDN que funcionou (jsdelivr)
+        // e verificando se o objeto global é 'supabase' ou 'supabaseJs'
         const cdnUrls = [
             'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js',
-            'https://unpkg.com/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.39.7/umd/supabase.min.js'
+            'https://unpkg.com/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js'
         ];
         
-        let attempts = 0;
+        function checkAndInit() {
+            // Verifica se o supabase está disponível em qualquer formato
+            const supabaseLib = window.supabase || window.supabaseJs;
+            if (supabaseLib) {
+                console.log('✅ Supabase carregado com sucesso!');
+                console.log('🔍 Objeto disponível como:', supabaseLib === window.supabase ? 'window.supabase' : 'window.supabaseJs');
+                initDashboard();
+                return true;
+            }
+            return false;
+        }
         
         function tryLoad(index) {
             if (index >= cdnUrls.length) {
@@ -249,20 +260,19 @@
                 return;
             }
             
-            attempts++;
-            console.log(`📥 Tentativa ${attempts}: ${cdnUrls[index]}`);
+            console.log(`📥 Tentativa ${index + 1}: ${cdnUrls[index]}`);
             
             const script = document.createElement('script');
             script.src = cdnUrls[index];
             script.onload = function() {
-                console.log('✅ Supabase carregado com sucesso!');
-                if (typeof supabaseJs !== 'undefined') {
-                    console.log('✅ supabaseJs disponível! Iniciando dashboard...');
-                    initDashboard();
-                } else {
-                    console.warn('⚠️ Script carregado mas supabaseJs não está definido. Tentando próximo...');
-                    tryLoad(index + 1);
-                }
+                console.log('✅ Script carregado, verificando disponibilidade...');
+                // Aguarda um momento para o script se registrar
+                setTimeout(() => {
+                    if (!checkAndInit()) {
+                        console.warn('⚠️ Script carregado mas supabase não está disponível. Tentando próximo...');
+                        tryLoad(index + 1);
+                    }
+                }, 100);
             };
             script.onerror = function() {
                 console.warn(`⚠️ Falha ao carregar: ${cdnUrls[index]}`);
@@ -270,6 +280,9 @@
             };
             document.head.appendChild(script);
         }
+        
+        // Verifica se já está carregado
+        if (checkAndInit()) return;
         
         // Inicia o carregamento
         if (document.readyState === 'loading') {
@@ -288,11 +301,21 @@
         console.log('🚀 Inicializando dashboard...');
         
         // ============================================================
-        // CONFIGURAÇÃO DO SUPABASE
+        // CONFIGURAÇÃO DO SUPABASE - USANDO window.supabase
         // ============================================================
         const SUPABASE_URL = 'https://nlhjlgerkwtbwelwcrpb.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_HEobL0ZSvRcH3BSMR_C03A__e0NBrdQ';
-        const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Obtém a referência correta do Supabase
+        const SupabaseClient = window.supabase || window.supabaseJs;
+        if (!SupabaseClient) {
+            console.error('❌ Supabase não disponível!');
+            document.getElementById('table-body').innerHTML = 
+                '<tr><td colspan="14" class="empty-row">❌ Biblioteca Supabase não carregada.</td></tr>';
+            return;
+        }
+        
+        const supabase = SupabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const TABLE_NAME = 'equipamentos';
 
         // ============================================================
@@ -343,6 +366,8 @@
                 render();
                 if (equipamentos.length > 0) {
                     showToast(`✅ ${equipamentos.length} equipamentos carregados`, 'success');
+                } else {
+                    showToast('📭 Nenhum equipamento encontrado. Adicione um novo!', 'info');
                 }
             } catch (err) {
                 console.error('Erro:', err);
