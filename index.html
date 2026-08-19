@@ -522,14 +522,14 @@
 
 <!-- Toast notification -->
 <div class="toast" id="toast"></div>
-
-<script>
+    
+   <script>
     // ============================================================
-    // CONFIGURAÇÃO DO SUPABASE
-    // Substitua pelos seus dados do Supabase
+    // CONFIGURAÇÃO DO SUPABASE - CORRIGIDA
     // ============================================================
     const SUPABASE_URL = 'https://nlhjlgerkwtbwelwcrpb.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_HEoblOZSvRcH3BSMR_CO3A__e0NBrdQ';
+    // ⚠️ ATENÇÃO: Substitua pela chave PUBLISHABLE correta (começa com sb_pub_)
+    const SUPABASE_ANON_KEY = 'sb_pub_aqui_sua_chave_completa';
     const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const TABLE_NAME = 'equipamentos';
 
@@ -573,21 +573,30 @@
         try {
             tbody.innerHTML = `<tr><td colspan="14" class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando equipamentos...</td></tr>`;
             
+            console.log('🔍 Tentando carregar dados do Supabase...');
+            
             const { data, error } = await supabase
                 .from(TABLE_NAME)
                 .select('*')
                 .order('id', { ascending: true });
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ Erro do Supabase:', error);
+                throw error;
+            }
 
+            console.log('✅ Dados carregados:', data);
             equipamentos = data || [];
             populateSelects();
             render();
             showToast(`✅ ${equipamentos.length} equipamentos carregados`, 'success');
         } catch (err) {
-            console.error('Erro ao carregar:', err);
+            console.error('❌ Erro ao carregar:', err);
             showToast('❌ Erro ao carregar equipamentos: ' + err.message, 'error');
-            tbody.innerHTML = `<tr><td colspan="14" class="empty-row">Erro ao carregar dados. Verifique a conexão com o Supabase.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="14" class="empty-row">
+                Erro ao carregar dados. Verifique a conexão com o Supabase.<br>
+                <small style="color:#991b1b;">${err.message}</small>
+            </td></tr>`;
         }
     }
 
@@ -599,7 +608,6 @@
         const modelos = [...new Set(equipamentos.map(d => d.modelo).filter(Boolean))].sort();
         const tipos = [...new Set(equipamentos.map(d => d.tipo).filter(Boolean))].sort();
 
-        // Preservar opção "Todas"
         const currentMarca = filterMarca.value;
         const currentModelo = filterModelo.value;
         const currentTipo = filterTipo.value;
@@ -612,7 +620,6 @@
         modelos.forEach(m => { let opt = document.createElement('option'); opt.value = m; opt.textContent = m; filterModelo.appendChild(opt); });
         tipos.forEach(t => { let opt = document.createElement('option'); opt.value = t; opt.textContent = t; filterTipo.appendChild(opt); });
 
-        // Restaurar valores selecionados se ainda existirem
         if ([...filterMarca.options].some(o => o.value === currentMarca)) filterMarca.value = currentMarca;
         if ([...filterModelo.options].some(o => o.value === currentModelo)) filterModelo.value = currentModelo;
         if ([...filterTipo.options].some(o => o.value === currentTipo)) filterTipo.value = currentTipo;
@@ -635,7 +642,6 @@
             return true;
         });
 
-        // Atualiza cards
         const total = filtered.length;
         const okCount = filtered.filter(r => r.desprov === 'SIM' || r.desprov === 'OK').length;
         const naoCount = filtered.filter(r => r.desprov === 'NÃO').length;
@@ -649,7 +655,6 @@
         document.getElementById('patrimonio-count').textContent = patrimonioCount;
         document.getElementById('total-registros').textContent = total;
 
-        // Monta tabela
         if (filtered.length === 0) {
             tbody.innerHTML = `<tr class="empty-row"><td colspan="14">Nenhum equipamento encontrado com os filtros atuais.</td></tr>`;
             return;
@@ -708,10 +713,8 @@
 
             if (error) throw error;
 
-            // Adicionar ao array local e re-renderizar
             if (inserted && inserted.length > 0) {
                 equipamentos.push(inserted[0]);
-                // Re-popular selects com novos valores
                 populateSelects();
                 render();
                 showToast('✅ Equipamento adicionado com sucesso!', 'success');
@@ -733,7 +736,6 @@
         modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
         formEquip.reset();
-        // Preencher data atual
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('f-data').value = today;
         document.getElementById('f-marca').focus();
@@ -773,7 +775,6 @@
             patrimonio: document.getElementById('f-patrimonio').value.trim() || null,
         };
 
-        // Validação básica
         if (!data.marca || !data.modelo || !data.tipo) {
             showToast('❌ Preencha os campos obrigatórios: Marca, Modelo e Tipo', 'error');
             return;
@@ -801,17 +802,6 @@
     // INICIALIZAR
     // ============================================================
     loadEquipamentos();
-    // Teste se a conexão está funcionando
-const { data, error } = await supabase
-    .from('equipamentos')
-    .select('*')
-    .limit(1);
-    
-if (error) {
-    console.log('❌ Erro:', error);
-} else {
-    console.log('✅ Conectado! Dados:', data);
-}
 </script>
 </body>
 </html>
