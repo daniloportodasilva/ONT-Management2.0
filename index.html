@@ -4,8 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard de Equipamentos - Reuso e Testes</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Favicon para evitar erro 404 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase JS - USANDO UNPKG (mais estável) -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f4f7fc; padding: 20px; color: #1e293b; }
@@ -223,6 +231,9 @@
     (function() {
         'use strict';
         
+        console.log('🔍 Verificando bibliotecas...');
+        console.log('supabaseJs disponível?', typeof supabaseJs !== 'undefined');
+        
         // ============================================================
         // CONFIGURAÇÃO DO SUPABASE
         // ============================================================
@@ -233,9 +244,11 @@
         if (typeof supabaseJs === 'undefined') {
             document.getElementById('table-body').innerHTML = 
                 '<tr><td colspan="14" class="empty-row">❌ Biblioteca Supabase não carregada. Verifique sua conexão com a internet.</td></tr>';
+            console.error('❌ supabaseJs não está definido!');
             return;
         }
         
+        console.log('✅ Criando cliente Supabase...');
         const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const TABLE_NAME = 'equipamentos';
 
