@@ -40,7 +40,6 @@
             padding-left: 16px;
             font-weight: 300;
         }
-        /* Cards de resumo */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -76,7 +75,6 @@
             color: #475569;
             margin-left: 6px;
         }
-        /* Filtros */
         .filters {
             display: flex;
             flex-wrap: wrap;
@@ -128,7 +126,6 @@
         .filter-clear:hover {
             background: #dce2ea;
         }
-        /* Botão Novo Equipamento */
         .btn-new {
             background: #2563eb;
             border: none;
@@ -150,7 +147,6 @@
         .btn-new i {
             font-size: 0.9rem;
         }
-        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -281,7 +277,6 @@
         .btn-cancel:hover {
             background: #dce2ea;
         }
-        /* Tabela */
         .table-wrapper {
             background: white;
             border-radius: 24px;
@@ -394,7 +389,6 @@
         </button>
     </div>
 
-    <!-- Cards resumo -->
     <div class="stats-grid" id="stats-grid">
         <div class="stat-card"><div class="label">Total</div><div class="value" id="total-count">0</div></div>
         <div class="stat-card"><div class="label">Desprov. OK</div><div class="value" id="ok-count">0</div></div>
@@ -403,7 +397,6 @@
         <div class="stat-card"><div class="label">Com Patrimônio</div><div class="value" id="patrimonio-count">0</div></div>
     </div>
 
-    <!-- Filtros -->
     <div class="filters">
         <label>Marca <select id="filter-marca"><option value="">Todas</option></select></label>
         <label>Modelo <select id="filter-modelo"><option value="">Todos</option></select></label>
@@ -412,7 +405,6 @@
         <button class="filter-clear" id="clear-filters"><i class="fas fa-undo-alt"></i> Limpar filtros</button>
     </div>
 
-    <!-- Tabela -->
     <div class="table-wrapper">
         <table id="data-table">
             <thead>
@@ -522,20 +514,15 @@
 
 <!-- Toast notification -->
 <div class="toast" id="toast"></div>
-    
- <script>
+
+<script>
     // ============================================================
-    // CONFIGURAÇÃO DO SUPABASE
+    // CONFIGURAÇÃO DO SUPABASE - APENAS UMA DECLARAÇÃO
     // ============================================================
     const SUPABASE_URL = 'https://nlhjlgerkwtbwelwcrpb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_HEobL0ZSvRcH3BSMR_C03A__e0NBrdQ';
     const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const TABLE_NAME = 'equipamentos';
-
-    // ============================================================
-    // ESTADO
-    // ============================================================
-    let equipamentos = [];
 
     // ============================================================
     // DOM REFERENCES
@@ -555,7 +542,7 @@
     const toast = document.getElementById('toast');
 
     // ============================================================
-    // FUNÇÕES DE TOAST
+    // TOAST
     // ============================================================
     function showToast(message, type = 'info') {
         toast.textContent = message;
@@ -565,7 +552,7 @@
     }
 
     // ============================================================
-    // CARREGAR DADOS DO SUPABASE
+    // LOAD DATA
     // ============================================================
     async function loadEquipamentos() {
         try {
@@ -585,15 +572,17 @@
                 showToast(`✅ ${equipamentos.length} equipamentos carregados`, 'success');
             }
         } catch (err) {
-            console.error('Erro ao carregar:', err);
+            console.error('Erro:', err);
             showToast('❌ Erro ao carregar: ' + err.message, 'error');
             tbody.innerHTML = `<tr><td colspan="14" class="empty-row">Erro ao carregar dados. Verifique a conexão com o Supabase.</td></tr>`;
         }
     }
 
     // ============================================================
-    // POPULAR SELECTS COM VALORES ÚNICOS
+    // DADOS
     // ============================================================
+    let equipamentos = [];
+
     function populateSelects() {
         const marcas = [...new Set(equipamentos.map(d => d.marca).filter(Boolean))].sort();
         const modelos = [...new Set(equipamentos.map(d => d.modelo).filter(Boolean))].sort();
@@ -617,7 +606,7 @@
     }
 
     // ============================================================
-    // RENDERIZAR TABELA E CARDS
+    // RENDER
     // ============================================================
     function render() {
         const marcaFilter = filterMarca.value;
@@ -647,7 +636,7 @@
         document.getElementById('total-registros').textContent = total;
 
         if (filtered.length === 0) {
-            tbody.innerHTML = `<tr class="empty-row"><td colspan="14">Nenhum equipamento encontrado com os filtros atuais.</td></tr>`;
+            tbody.innerHTML = `<tr class="empty-row"><td colspan="14">Nenhum equipamento encontrado.</td></tr>`;
             return;
         }
 
@@ -690,7 +679,7 @@
     }
 
     // ============================================================
-    // INSERIR EQUIPAMENTO NO SUPABASE
+    // INSERT
     // ============================================================
     async function insertEquipamento(data) {
         try {
@@ -738,7 +727,6 @@
         document.body.style.overflow = '';
     }
 
-    // Event listeners do modal
     btnNew.addEventListener('click', openModal);
     modalClose.addEventListener('click', closeModal);
     modalCancel.addEventListener('click', closeModal);
@@ -747,7 +735,7 @@
     });
 
     // ============================================================
-    // FORM SUBMIT
+    // FORM
     // ============================================================
     formEquip.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -777,7 +765,7 @@
     });
 
     // ============================================================
-    // EVENT LISTENERS DE FILTROS
+    // FILTERS
     // ============================================================
     filterMarca.addEventListener('change', render);
     filterModelo.addEventListener('change', render);
@@ -792,9 +780,9 @@
     });
 
     // ============================================================
-    // INICIALIZAR
+    // INIT
     // ============================================================
-    console.log('🚀 Inicializando dashboard...');
+    console.log('🚀 Dashboard inicializado!');
     loadEquipamentos();
 </script>
 </body>
