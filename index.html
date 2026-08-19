@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard de Equipamentos - Reuso e Testes</title>
     
-    <!-- Favicon para evitar erro 404 -->
+    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Supabase JS - USANDO UNPKG (mais estável) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.39.0/umd/supabase.min.js"></script>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -147,7 +144,7 @@
     </div>
 </div>
 
-<!-- Modal Novo Equipamento -->
+<!-- Modal -->
 <div class="modal-overlay" id="modal-equipamento">
     <div class="modal">
         <button class="close-btn" id="modal-close"><i class="fas fa-times"></i></button>
@@ -224,31 +221,77 @@
     </div>
 </div>
 
-<!-- Toast notification -->
+<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-    (function() {
+    // ============================================================
+    // CARREGAMENTO DO SUPABASE COM FALLBACK
+    // ============================================================
+    (function loadSupabase() {
+        console.log('🔍 Iniciando carregamento do Supabase...');
+        
+        const cdnUrls = [
+            'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js',
+            'https://unpkg.com/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.39.7/umd/supabase.min.js'
+        ];
+        
+        let attempts = 0;
+        
+        function tryLoad(index) {
+            if (index >= cdnUrls.length) {
+                console.error('❌ Todas as CDNs falharam!');
+                const tbody = document.getElementById('table-body');
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="14" class="empty-row">❌ Não foi possível carregar a biblioteca Supabase. Verifique sua conexão com a internet.</td></tr>';
+                }
+                return;
+            }
+            
+            attempts++;
+            console.log(`📥 Tentativa ${attempts}: ${cdnUrls[index]}`);
+            
+            const script = document.createElement('script');
+            script.src = cdnUrls[index];
+            script.onload = function() {
+                console.log('✅ Supabase carregado com sucesso!');
+                if (typeof supabaseJs !== 'undefined') {
+                    console.log('✅ supabaseJs disponível! Iniciando dashboard...');
+                    initDashboard();
+                } else {
+                    console.warn('⚠️ Script carregado mas supabaseJs não está definido. Tentando próximo...');
+                    tryLoad(index + 1);
+                }
+            };
+            script.onerror = function() {
+                console.warn(`⚠️ Falha ao carregar: ${cdnUrls[index]}`);
+                tryLoad(index + 1);
+            };
+            document.head.appendChild(script);
+        }
+        
+        // Inicia o carregamento
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => tryLoad(0));
+        } else {
+            tryLoad(0);
+        }
+    })();
+
+    // ============================================================
+    // INICIALIZAÇÃO DO DASHBOARD
+    // ============================================================
+    function initDashboard() {
         'use strict';
         
-        console.log('🔍 Verificando bibliotecas...');
-        console.log('supabaseJs disponível?', typeof supabaseJs !== 'undefined');
+        console.log('🚀 Inicializando dashboard...');
         
         // ============================================================
         // CONFIGURAÇÃO DO SUPABASE
         // ============================================================
         const SUPABASE_URL = 'https://nlhjlgerkwtbwelwcrpb.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_HEobL0ZSvRcH3BSMR_C03A__e0NBrdQ';
-        
-        // Verifica se supabaseJs está disponível
-        if (typeof supabaseJs === 'undefined') {
-            document.getElementById('table-body').innerHTML = 
-                '<tr><td colspan="14" class="empty-row">❌ Biblioteca Supabase não carregada. Verifique sua conexão com a internet.</td></tr>';
-            console.error('❌ supabaseJs não está definido!');
-            return;
-        }
-        
-        console.log('✅ Criando cliente Supabase...');
         const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const TABLE_NAME = 'equipamentos';
 
@@ -510,9 +553,9 @@
         // ============================================================
         // INIT
         // ============================================================
-        console.log('🚀 Dashboard inicializado!');
+        console.log('✅ Dashboard pronto!');
         loadEquipamentos();
-    })();
+    }
 </script>
 </body>
 </html>
